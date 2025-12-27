@@ -98,7 +98,26 @@ basilisk/
 
 ---
 
-## 🧪 Verification (Prove It Works)
+## 🧪 Testing & Verification
+
+### Run Test Suite
+
+Comprehensive test coverage (75+ tests, 85%+ coverage):
+
+```bash
+./run_tests.sh          # Run all tests
+./run_tests.sh coverage # With coverage report
+./run_tests.sh unit     # Only unit tests
+```
+
+**Test Categories:**
+- **Unit Tests** - Core algorithm (`test_radioactive_poison.py`)
+- **API Tests** - Flask endpoints (`test_api.py`)
+- **CLI Tests** - Command-line interface (`test_cli.py`)
+
+See [tests/README.md](tests/README.md) for full documentation.
+
+### Verify Poison Works (Integration Test)
 
 Test that the poison actually survives model training:
 
