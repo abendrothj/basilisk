@@ -424,14 +424,104 @@ class VideoRadioactiveDetector:
         Returns:
             Tuple of (is_poisoned, confidence_score)
         """
-        # TODO: Implement video model detection
-        # This requires extracting features from video models
-        # For now, placeholder
+        model.eval()
+        model.to(self.device)
 
-        print("Video detection not yet implemented")
-        print("This requires a video feature extractor (e.g., I3D, TimeSformer)")
+        correlations = []
 
-        return False, 0.0
+        with torch.no_grad():
+            for video_path in tqdm(test_videos, desc="Detecting signature in videos"):
+                # Extract features from video using the model
+                features = self._extract_video_features(model, video_path)
+
+                if features is None:
+                    continue
+
+                # Compute correlation with spatial signature
+                # (temporal signature is encoded in the flow perturbations)
+                features_np = features.cpu().numpy().flatten()
+                signature_np = self.spatial_signature.flatten()
+
+                # Normalize both vectors
+                features_norm = features_np / (np.linalg.norm(features_np) + 1e-8)
+                signature_norm = signature_np / (np.linalg.norm(signature_np) + 1e-8)
+
+                # Compute correlation
+                correlation = np.dot(features_norm, signature_norm)
+                correlations.append(correlation)
+
+        if not correlations:
+            return False, 0.0
+
+        # Average correlation across test videos
+        avg_correlation = float(np.mean(correlations))
+        is_poisoned = avg_correlation > threshold
+
+        return is_poisoned, avg_correlation
+
+    def _extract_video_features(
+        self,
+        model: nn.Module,
+        video_path: str,
+        num_frames: int = 16
+    ) -> Optional[torch.Tensor]:
+        """
+        Extract features from a video using the provided model.
+
+        Args:
+            model: Video model (3D CNN or similar)
+            video_path: Path to video file
+            num_frames: Number of frames to sample
+
+        Returns:
+            Feature tensor or None if extraction fails
+        """
+        try:
+            cap = cv2.VideoCapture(video_path)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+            if total_frames == 0:
+                return None
+
+            # Sample frames uniformly
+            frame_indices = np.linspace(0, total_frames - 1, num_frames, dtype=int)
+            frames = []
+
+            for idx in frame_indices:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+                ret, frame = cap.read()
+                if ret:
+                    # Resize to 112x112 (common for video models)
+                    frame = cv2.resize(frame, (112, 112))
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    frames.append(frame)
+
+            cap.release()
+
+            if len(frames) < num_frames:
+                return None
+
+            # Convert to tensor (T, H, W, C) -> (1, C, T, H, W)
+            video_tensor = np.stack(frames, axis=0)  # (T, H, W, C)
+            video_tensor = torch.from_numpy(video_tensor).float()
+            video_tensor = video_tensor.permute(3, 0, 1, 2)  # (C, T, H, W)
+            video_tensor = video_tensor.unsqueeze(0)  # (1, C, T, H, W)
+            video_tensor = video_tensor / 255.0  # Normalize
+            video_tensor = video_tensor.to(self.device)
+
+            # Extract features using model
+            # Try to get intermediate features if available
+            if hasattr(model, 'extract_features'):
+                features = model.extract_features(video_tensor)
+            else:
+                # Use model output directly
+                features = model(video_tensor)
+
+            return features
+
+        except Exception as e:
+            print(f"Error extracting features from {video_path}: {e}")
+            return None
 
 
 if __name__ == "__main__":

@@ -6,7 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Phase](https://img.shields.io/badge/Phase-1%20Images-success)](docs/APPROACH.md)
+[![Images](https://img.shields.io/badge/Images-Verified-success)](VERIFICATION_PROOF.md)
+[![Tests](https://img.shields.io/badge/Tests-55%20Passing-success)](TESTING_SUMMARY.md)
 
 ---
 
@@ -75,10 +76,11 @@ AI companies scrape your artwork/photos from the internet and train models on th
 4. **Prove** data theft with cryptographic evidence
 
 ### Real-World Use Cases
+
 - **Artists**: Protect portfolios from Midjourney/Stable Diffusion training scrapes
 - **Photographers**: Prevent unauthorized use in image generation models
 - **Studios**: Safeguard proprietary concept art and designs
-- **VFX Artists**: Defense against OpenAI Sora video scraping (Phase 2)
+- **VFX Artists**: Protect video content from AI video model training
 
 ---
 
