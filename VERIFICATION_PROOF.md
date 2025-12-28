@@ -91,6 +91,47 @@ print(f'Drift: {hamming_distance(hash_orig, hash_compressed)}/256 bits')
 
 ---
 
+## Phase 2: Adversarial Hash Collision ✅ VERIFIED
+
+### Test Configuration
+
+**Goal:** Modify a video so its perceptual hash matches a specific 256-bit target (Collision Attack).
+
+**Attack Parameters:**
+- Method: PGD (Projected Gradient Descent) with Differentiable Feature Extraction
+- Epsilon: 0.1 (L_inf constraint)
+- Iterations: 40
+- Learning Rate: 2.0
+- Target: Random 256-bit signature
+
+### Results
+
+```text
+Target Hash: [0 1 0 0 0 0 0 1 1 0]...
+Starting PGD Attack on experiments/short_test.mp4
+Computing initial distance...
+Initial Distance: 137 bits
+
+Iter 10: Loss 0.1823
+Iter 20: Loss 0.0915
+Iter 30: Loss 0.0832
+Iter 40: Loss 0.0790
+
+Final Real Distance: 1 bits ✅ SUCCESS
+Compressed (CRF 28) Distance: 1 bits ✅ SUCCESS
+```
+
+### Key Findings
+1. **Collision Success:** Can force hash to match arbitrary signature within 1 bit (0.4% error).
+2. **Compression Resistance:** The "poisoned" hash survives YouTube-level compression (CRF 28) with NO additional drift (1 bit distance maintained).
+3. **Speed:** Optimization converges in < 40 iterations.
+
+### Implications
+- **Active Defense:** Creators can "sign" their videos by forcing them to hash to a specific signature.
+- **Proof of Authorship:** Even if the video is re-encoded, the hash remains < 30 bits from the author's signature.
+
+---
+
 ## Radioactive Data Marking 🔬 RESEARCH PREVIEW
 
 ### Test Configuration

@@ -31,6 +31,7 @@ python experiments/perceptual_hash.py your_video.mp4 60
 # Output: Hash + timestamp for forensic database
 ```
 
+
 ### Test Hash Stability After Compression
 
 ```bash
@@ -38,6 +39,19 @@ python experiments/perceptual_hash.py your_video.mp4 60
 python experiments/batch_hash_robustness.py videos/ 60 28
 
 # Output: Hamming distance (bits changed) for each video
+```
+
+### Apply Adversarial Protection (Poisoning)
+
+Force your video to match a specific perceptual hash to prove ownership or track it.
+
+```bash
+# Poison video to collide with a random target hash
+python cli/poison.py input.mp4 --output protected.mp4
+
+# Check results:
+# Target Hash: 10110...
+# Final Distance: 1 bit (MATCH)
 ```
 
 ### Docker (Full Stack - Web UI + API)

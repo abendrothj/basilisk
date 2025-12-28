@@ -1,6 +1,6 @@
 # Phase 2: Adversarial Perceptual Hash Collision
 
-**Status:** Ready to implement
+**Status:** ✅ **COMPLETED**
 **Prerequisite:** ✅ Hash stability proven (0-14 bit drift at CRF 28)
 
 ---
@@ -296,11 +296,15 @@ print(f"Success: {distance < 20}")
 ## Implementation Files
 
 ```
+core/
+├── adversarial.py                ✅ Done (PGD engine)
+├── perceptual_hash.py            ✅ Done (hash extraction)
+
+cli/
+└── poison.py                     ✅ Done (CLI Tool)
+
 experiments/
-├── perceptual_hash.py              ✅ Done (hash extraction)
-├── batch_hash_robustness.py        ✅ Done (stability testing)
-├── adversarial_perceptual_poison.py  ← Step 1-2 (to implement)
-└── validate_perceptual_poisoning.py  ← Step 3 (to implement)
+└── batch_hash_robustness.py      ✅ Done (stability testing)
 ```
 
 ---
