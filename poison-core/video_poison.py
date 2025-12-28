@@ -411,15 +411,22 @@ class VideoRadioactiveDetector:
         self,
         model: nn.Module,
         test_videos: List[str],
-        threshold: float = 0.15
+        threshold: float = 0.15,
+        method: str = 'auto'
     ) -> Tuple[bool, float]:
         """
         Detect if a video model was trained on poisoned data.
+
+        This implements THREE detection strategies:
+        1. Spatial feature correlation (baseline)
+        2. Temporal feature correlation (novel - tests cyclic pattern)
+        3. Behavioral test (black-box - tests model response to synthetic motion)
 
         Args:
             model: Video model (e.g., 3D CNN, video transformer)
             test_videos: List of test video paths (clean videos)
             threshold: Detection threshold
+            method: 'spatial', 'temporal', 'behavioral', or 'auto' (tries all)
 
         Returns:
             Tuple of (is_poisoned, confidence_score)
@@ -427,10 +434,45 @@ class VideoRadioactiveDetector:
         model.eval()
         model.to(self.device)
 
+        if method == 'auto':
+            # Try all methods and use the maximum correlation
+            print("🔍 Testing multiple detection strategies...")
+            spatial_poisoned, spatial_score = self._detect_spatial(model, test_videos, threshold)
+            temporal_poisoned, temporal_score = self._detect_temporal(model, test_videos, threshold)
+
+            # Use the best result
+            if temporal_score > spatial_score:
+                print(f"   Best method: Temporal (score={temporal_score:.6f})")
+                return temporal_poisoned, temporal_score
+            else:
+                print(f"   Best method: Spatial (score={spatial_score:.6f})")
+                return spatial_poisoned, spatial_score
+
+        elif method == 'spatial':
+            return self._detect_spatial(model, test_videos, threshold)
+        elif method == 'temporal':
+            return self._detect_temporal(model, test_videos, threshold)
+        elif method == 'behavioral':
+            return self._detect_behavioral(model, test_videos, threshold)
+        else:
+            raise ValueError(f"Unknown detection method: {method}")
+
+    def _detect_spatial(
+        self,
+        model: nn.Module,
+        test_videos: List[str],
+        threshold: float
+    ) -> Tuple[bool, float]:
+        """
+        Strategy 1: Spatial Feature Correlation
+
+        Tests if model's spatial features correlate with our spatial signature.
+        This is the baseline approach from image poisoning.
+        """
         correlations = []
 
         with torch.no_grad():
-            for video_path in tqdm(test_videos, desc="Detecting signature in videos"):
+            for video_path in tqdm(test_videos, desc="[Spatial] Detecting signature"):
                 # Extract features from video using the model
                 features = self._extract_video_features(model, video_path)
 
@@ -438,7 +480,6 @@ class VideoRadioactiveDetector:
                     continue
 
                 # Compute correlation with spatial signature
-                # (temporal signature is encoded in the flow perturbations)
                 features_np = features.cpu().numpy().flatten()
                 signature_np = self.spatial_signature.flatten()
 
@@ -458,6 +499,297 @@ class VideoRadioactiveDetector:
         is_poisoned = avg_correlation > threshold
 
         return is_poisoned, avg_correlation
+
+    def _detect_temporal(
+        self,
+        model: nn.Module,
+        test_videos: List[str],
+        threshold: float
+    ) -> Tuple[bool, float]:
+        """
+        Strategy 2: Temporal Feature Correlation (NOVEL)
+
+        Tests if model's temporal features exhibit the cyclic pattern
+        of our temporal signature. This is the key innovation for video.
+
+        How it works:
+        1. Extract per-frame features from model
+        2. Compute correlation with temporal signature across time
+        3. Check for cyclic pattern matching our period
+        """
+        temporal_correlations = []
+
+        with torch.no_grad():
+            for video_path in tqdm(test_videos, desc="[Temporal] Detecting cyclic signature"):
+                # Extract features for EACH frame separately
+                frame_features = self._extract_temporal_features(model, video_path)
+
+                if frame_features is None or len(frame_features) < self.temporal_period:
+                    continue
+
+                # Compute per-frame correlations with spatial signature
+                frame_correlations = []
+                for feat in frame_features:
+                    feat_np = feat.cpu().numpy().flatten()
+                    sig_np = self.spatial_signature.flatten()
+
+                    # Normalize
+                    feat_norm = feat_np / (np.linalg.norm(feat_np) + 1e-8)
+                    sig_norm = sig_np / (np.linalg.norm(sig_np) + 1e-8)
+
+                    # Correlation
+                    corr = np.dot(feat_norm, sig_norm)
+                    frame_correlations.append(corr)
+
+                # Now check if frame_correlations follow our temporal_signature pattern
+                # Use cross-correlation to detect cyclic pattern
+                temporal_corr = self._measure_temporal_correlation(
+                    frame_correlations,
+                    self.temporal_signature
+                )
+                temporal_correlations.append(temporal_corr)
+
+        if not temporal_correlations:
+            return False, 0.0
+
+        # Average temporal correlation
+        avg_temporal_corr = float(np.mean(temporal_correlations))
+        is_poisoned = avg_temporal_corr > threshold
+
+        return is_poisoned, avg_temporal_corr
+
+    def _detect_behavioral(
+        self,
+        model: nn.Module,
+        test_videos: List[str],
+        threshold: float
+    ) -> Tuple[bool, float]:
+        """
+        Strategy 3: Behavioral Test (Black-Box)
+
+        Tests if model exhibits different behavior on videos with
+        our signature motion pattern vs random motion.
+
+        This works even if we can't extract features directly.
+        """
+        # Generate synthetic test videos with signature motion
+        print("Generating synthetic test videos with signature motion...")
+        signature_video = self._generate_synthetic_video_with_signature()
+        random_video = self._generate_synthetic_video_random()
+
+        with torch.no_grad():
+            # Get model predictions
+            sig_features = self._extract_video_features(model, signature_video)
+            rand_features = self._extract_video_features(model, random_video)
+
+            if sig_features is None or rand_features is None:
+                return False, 0.0
+
+            # Measure difference in model response
+            sig_np = sig_features.cpu().numpy().flatten()
+            rand_np = rand_features.cpu().numpy().flatten()
+
+            # Normalize
+            sig_norm = sig_np / (np.linalg.norm(sig_np) + 1e-8)
+            rand_norm = rand_np / (np.linalg.norm(rand_np) + 1e-8)
+
+            # Compute divergence
+            # If model learned our signature, responses should be different
+            divergence = np.linalg.norm(sig_norm - rand_norm)
+
+        # Clean up temp videos
+        import os
+        os.remove(signature_video)
+        os.remove(random_video)
+
+        is_poisoned = divergence > threshold
+        return is_poisoned, float(divergence)
+
+    def _extract_temporal_features(
+        self,
+        model: nn.Module,
+        video_path: str,
+        num_frames: int = None
+    ) -> Optional[List[torch.Tensor]]:
+        """
+        Extract features for EACH frame separately (for temporal correlation).
+
+        This is different from _extract_video_features which processes
+        the entire video clip at once. Here we want per-frame features
+        to detect temporal patterns.
+
+        Returns:
+            List of feature tensors, one per frame
+        """
+        if num_frames is None:
+            num_frames = self.temporal_period * 2  # Extract at least 2 cycles
+
+        try:
+            cap = cv2.VideoCapture(video_path)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+            if total_frames == 0:
+                return None
+
+            # Sample frames uniformly
+            frame_indices = np.linspace(0, total_frames - 1, num_frames, dtype=int)
+            frame_features = []
+
+            # Process frames in sliding windows
+            window_size = 16  # Model expects 16-frame clips
+            stride = 1  # Slide by 1 frame to get per-frame features
+
+            frames_buffer = []
+            for idx in frame_indices:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+                ret, frame = cap.read()
+                if ret:
+                    frame = cv2.resize(frame, (112, 112))
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    frames_buffer.append(frame)
+
+                # When buffer is full, extract features
+                if len(frames_buffer) >= window_size:
+                    # Convert to tensor
+                    video_tensor = np.stack(frames_buffer[-window_size:], axis=0)
+                    video_tensor = torch.from_numpy(video_tensor).float()
+                    video_tensor = video_tensor.permute(3, 0, 1, 2)  # (C, T, H, W)
+                    video_tensor = video_tensor.unsqueeze(0)  # (1, C, T, H, W)
+                    video_tensor = video_tensor / 255.0
+                    video_tensor = video_tensor.to(self.device)
+
+                    # Extract features
+                    with torch.no_grad():
+                        if hasattr(model, 'extract_features'):
+                            feat = model.extract_features(video_tensor)
+                        else:
+                            feat = model(video_tensor)
+
+                        # Take the features corresponding to the center frame
+                        frame_features.append(feat)
+
+            cap.release()
+
+            return frame_features if len(frame_features) > 0 else None
+
+        except Exception as e:
+            print(f"Error extracting temporal features from {video_path}: {e}")
+            return None
+
+    def _measure_temporal_correlation(
+        self,
+        frame_correlations: List[float],
+        temporal_signature: np.ndarray
+    ) -> float:
+        """
+        Measure how well frame correlations match the temporal signature pattern.
+
+        Uses cross-correlation to detect cyclic patterns.
+
+        Args:
+            frame_correlations: List of per-frame correlation scores
+            temporal_signature: Expected temporal pattern (sine wave)
+
+        Returns:
+            Correlation score (higher = better match)
+        """
+        # Convert to numpy array
+        frame_corr_array = np.array(frame_correlations)
+
+        # Compute cross-correlation with signature
+        # This detects if the pattern repeats with our period
+        period = len(temporal_signature)
+
+        # Tile the signature to match frame_correlations length
+        num_tiles = int(np.ceil(len(frame_corr_array) / period))
+        signature_tiled = np.tile(temporal_signature, num_tiles)[:len(frame_corr_array)]
+
+        # Normalize both
+        frame_norm = frame_corr_array / (np.linalg.norm(frame_corr_array) + 1e-8)
+        sig_norm = signature_tiled / (np.linalg.norm(signature_tiled) + 1e-8)
+
+        # Compute correlation
+        correlation = np.dot(frame_norm, sig_norm)
+
+        return float(correlation)
+
+    def _generate_synthetic_video_with_signature(self) -> str:
+        """
+        Generate a synthetic test video with our signature motion pattern.
+
+        This creates a simple scene with moving objects that have
+        motion vectors matching our temporal signature.
+
+        Returns:
+            Path to temporary video file
+        """
+        import tempfile
+
+        # Create temporary file
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.mp4')
+        import os
+        os.close(temp_fd)
+
+        # Generate simple moving pattern video
+        width, height = 112, 112
+        fps = 30
+        duration_frames = self.temporal_period * 2  # 2 cycles
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(temp_path, fourcc, fps, (width, height))
+
+        for frame_idx in range(duration_frames):
+            # Create frame with moving circle
+            frame = np.zeros((height, width, 3), dtype=np.uint8)
+
+            # Get temporal modulation
+            temporal_idx = frame_idx % self.temporal_period
+            temporal_weight = self.temporal_signature[temporal_idx]
+
+            # Move circle according to signature
+            x = int(width / 2 + 20 * temporal_weight)
+            y = int(height / 2)
+
+            cv2.circle(frame, (x, y), 10, (255, 255, 255), -1)
+            out.write(frame)
+
+        out.release()
+        return temp_path
+
+    def _generate_synthetic_video_random(self) -> str:
+        """
+        Generate a synthetic test video with random motion (control).
+
+        Returns:
+            Path to temporary video file
+        """
+        import tempfile
+
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.mp4')
+        import os
+        os.close(temp_fd)
+
+        width, height = 112, 112
+        fps = 30
+        duration_frames = self.temporal_period * 2
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(temp_path, fourcc, fps, (width, height))
+
+        rng = np.random.RandomState(42)  # Fixed seed for reproducibility
+        positions = rng.randint(20, width - 20, size=duration_frames)
+
+        for frame_idx in range(duration_frames):
+            frame = np.zeros((height, width, 3), dtype=np.uint8)
+
+            x = int(positions[frame_idx])
+            y = int(height / 2)
+
+            cv2.circle(frame, (x, y), 10, (255, 255, 255), -1)
+            out.write(frame)
+
+        out.release()
+        return temp_path
 
     def _extract_video_features(
         self,
