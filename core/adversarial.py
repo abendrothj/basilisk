@@ -175,8 +175,18 @@ def poison_video(
         for frame in poisoned_np
     ]
     
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    # Try High Quality H.264 (avc1) first, then mp4v
+    codec = 'avc1'
+    fourcc = cv2.VideoWriter_fourcc(*codec)
     out = cv2.VideoWriter(output_path, fourcc, 30.0, (W, H))
+    
+    if not out.isOpened():
+        if verbose:
+            print(f"Warning: Failed to open codec '{codec}'. Falling back to 'mp4v'.")
+        codec = 'mp4v'
+        fourcc = cv2.VideoWriter_fourcc(*codec)
+        out = cv2.VideoWriter(output_path, fourcc, 30.0, (W, H))
+    
     for frame in frames_list:
         out.write(frame)
     out.release()

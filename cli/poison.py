@@ -15,8 +15,8 @@ def main():
     parser.add_argument("input_video", help="Path to input video")
     parser.add_argument("--output", "-o", default="poisoned.mp4", help="Path to output video")
     parser.add_argument("--target", "-t", help="Target hash (hex string). If not provided, random target is used.")
-    parser.add_argument("--epsilon", "-e", type=float, default=0.1, help="Perturbation magnitude (default: 0.1)")
-    parser.add_argument("--iters", "-i", type=int, default=40, help="Number of PGD iterations (default: 40)")
+    parser.add_argument("--epsilon", "-e", type=float, default=0.02, help="Perturbation magnitude (default: 0.02 for stealth)")
+    parser.add_argument("--iters", "-i", type=int, default=100, help="Number of PGD iterations (default: 100)")
     parser.add_argument("--lr", type=float, default=2.0, help="Learning rate (default: 2.0)")
     
     args = parser.parse_args()
