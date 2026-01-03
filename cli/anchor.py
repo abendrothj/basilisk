@@ -69,7 +69,7 @@ def add_anchor(signature_path: Path, anchor_type: str, url: str, metadata: Optio
     # Check for duplicates
     for existing_anchor in sig_doc['anchors']:
         if existing_anchor['url'] == url:
-            print(f"⚠️  Warning: This URL is already anchored in the signature file")
+            print("⚠️  Warning: This URL is already anchored in the signature file")
             return sig_doc
 
     # Add anchor
@@ -100,23 +100,23 @@ def cmd_twitter(args):
         sys.exit(1)
 
     try:
-        print(f"🔗 Anchoring signature to Twitter...")
+        print("🔗 Anchoring signature to Twitter...")
         print(f"   Signature: {sig_path.name}")
         print(f"   Tweet: {tweet_url}")
 
         # Add anchor
         sig_doc = add_anchor(sig_path, 'twitter', tweet_url)
 
-        print(f"\n✅ Signature anchored successfully")
+        print("\n✅ Signature anchored successfully")
         print(f"   Total anchors: {len(sig_doc.get('anchors', []))}")
 
         if args.verbose:
-            print(f"\n💡 What this proves:")
-            print(f"   1. Your Ed25519 signature proves you possessed the hash")
-            print(f"   2. Twitter's timestamp proves when you made the claim")
-            print(f"   3. Together: You owned this hash at this specific time")
-            print(f"   4. In court: Burden of proof shifts to the defendant")
-            print(f"\n💡 Optional: Manually archive your tweet at web.archive.org for backup")
+            print("\n💡 What this proves:")
+            print("   1. Your Ed25519 signature proves you possessed the hash")
+            print("   2. Twitter's timestamp proves when you made the claim")
+            print("   3. Together: You owned this hash at this specific time")
+            print("   4. In court: Burden of proof shifts to the defendant")
+            print("\n💡 Optional: Manually archive your tweet at web.archive.org for backup")
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)

@@ -19,7 +19,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
-    from core.perceptual_hash import load_video_frames, extract_perceptual_features, compute_perceptual_hash, hamming_distance
+    from core.perceptual_hash import load_video_frames, extract_perceptual_features, compute_perceptual_hash
     from core.hash_database import HashDatabase
     from core.crypto_signatures import SignatureManager, SigilIdentity
 except ImportError as e:
