@@ -18,7 +18,7 @@ import numpy as np
 import subprocess
 from pathlib import Path
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'poison-core'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Sigil'))
 from frequency_poison import FrequencyDomainVideoMarker
 
 

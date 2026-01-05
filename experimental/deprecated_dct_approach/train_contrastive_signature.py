@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Tuple, List
 import subprocess
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'poison-core'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'Sigil'))
 from differentiable_codec import DifferentiableH264
 from frequency_poison import FrequencyDomainVideoMarker
 from frequency_detector import FrequencySignatureDetector

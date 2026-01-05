@@ -166,7 +166,7 @@ Given a suspect model `M` and signature `s`:
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
 │  ┌───────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │  poison-core  │  │ verification │  │   web-ui     │     │
+│  │  Sigil  │  │ verification │  │   web-ui     │     │
 │  │               │  │              │  │              │     │
 │  │ • Radioactive │  │ • Training   │  │ • React UI   │     │
 │  │   Marker      │  │   scripts    │  │ • Drag/drop  │     │
@@ -213,7 +213,7 @@ Return: Is poisoned? (Yes/No) + Confidence score (0-1)
 
 ```
 sigil/
-├── poison-core/
+├── Sigil/
 │   ├── radioactive_poison.py   # Core algorithm
 │   ├── poison_cli.py            # Command-line interface
 │   └── requirements.txt

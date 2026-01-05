@@ -24,7 +24,7 @@ from pathlib import Path
 import cv2
 from cmaes import CMA
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'poison-core'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'Sigil'))
 from frequency_poison import FrequencyDomainVideoMarker
 from frequency_detector import FrequencySignatureDetector
 

@@ -243,7 +243,7 @@ NODE_ENV=production
 
 ```
 experiments/perceptual_hash.py       → core/perceptual_hash.py
-poison-core/*                        → experimental/radioactive/
+Sigil/*                        → experimental/radioactive/
 verification/*                       → experimental/verification/
 experiments/deprecated_dct_approach/ → experimental/deprecated_dct_approach/
 Dockerfile.api                       → docker/Dockerfile.api
@@ -264,7 +264,7 @@ See [RESTRUCTURE_SUMMARY.md](RESTRUCTURE_SUMMARY.md) for full migration guide.
 ## What Was Removed
 
 **Directories:**
-- `poison-core/` (moved to `experimental/radioactive/`)
+- `Sigil/` (moved to `experimental/radioactive/`)
 - `verification/` (moved to `experimental/verification/`)
 
 **Files:**

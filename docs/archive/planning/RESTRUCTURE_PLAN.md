@@ -115,7 +115,7 @@ sigil/
 ### Phase 3: Isolate Radioactive Marking
 
 1. Create `experimental/radioactive/` directory
-2. Move `poison-core/` → `experimental/radioactive/`
+2. Move `Sigil/` → `experimental/radioactive/`
 3. Move `verification/` → `experimental/verification/`
 4. Move `experiments/deprecated_dct_approach/` → `experimental/deprecated_dct_approach/`
 5. Add ⚠️ WARNING README in `experimental/`
@@ -327,7 +327,7 @@ docker-compose up
 
 ## Breaking Changes
 
-1. **Import paths** - All imports from `experiments/` and `poison-core/` need updating
+1. **Import paths** - All imports from `experiments/` and `Sigil/` need updating
 2. **CLI commands** - New command structure (`sigil extract` vs `python experiments/perceptual_hash.py`)
 3. **API endpoints** - New endpoint structure (`/extract_hash` vs `/poison`)
 4. **Docker paths** - Volume mounts updated for new structure

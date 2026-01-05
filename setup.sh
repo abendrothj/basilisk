@@ -46,16 +46,16 @@ fi
 # Activate virtual environment
 source venv/bin/activate
 
-# Install poison-core dependencies
+# Install Sigil dependencies
 echo ""
-echo "Installing poison-core dependencies..."
-cd poison-core
+echo "Installing Sigil dependencies..."
+cd Sigil
 pip3 install --upgrade pip3 > /dev/null 2>&1
 pip3 install -r requirements.txt
 if [ $? -eq 0 ]; then
-    echo "✅ poison-core dependencies installed"
+    echo "✅ Sigil dependencies installed"
 else
-    echo "❌ Failed to install poison-core dependencies"
+    echo "❌ Failed to install Sigil dependencies"
     exit 1
 fi
 cd ..
@@ -94,9 +94,9 @@ echo "=================================================="
 echo ""
 echo "Next steps:"
 echo ""
-echo "1. Test the CLI (poison-core):"
+echo "1. Test the CLI (Sigil):"
 echo "   ${GREEN}source venv/bin/activate${NC}"
-echo "   ${GREEN}python poison-core/poison_cli.py info${NC}"
+echo "   ${GREEN}python Sigil/poison_cli.py info${NC}"
 echo ""
 echo "2. Start the API server:"
 echo "   ${GREEN}./run_api.sh${NC}"

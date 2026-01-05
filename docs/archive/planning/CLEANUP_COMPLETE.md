@@ -90,7 +90,7 @@ sigil/                              # Clean root directory
 
 ### Directories Removed
 
-- `poison-core/` → `experimental/radioactive/`
+- `Sigil/` → `experimental/radioactive/`
 - `verification/` → `experimental/verification/`
 
 ---

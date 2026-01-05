@@ -188,7 +188,7 @@ pytest tests/test_cli.py::test_poison_basic -v
 pytest tests/ -k "signature" -v
 
 # Run with coverage
-pytest tests/ --cov=poison-core --cov=api --cov-report=html
+pytest tests/ --cov=Sigil --cov=api --cov-report=html
 ```
 
 ## Edge Cases Covered
@@ -262,9 +262,9 @@ open htmlcov/index.html
 ```
 Name                              Stmts   Miss  Cover
 -----------------------------------------------------
-poison-core/radioactive_poison.py   245     24    90%
+Sigil/radioactive_poison.py   245     24    90%
 api/server.py                       189     28    85%
-poison-core/poison_cli.py           156     31    80%
+Sigil/poison_cli.py           156     31    80%
 -----------------------------------------------------
 TOTAL                               590     83    86%
 ```

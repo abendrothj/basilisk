@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'poison-core'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Sigil'))
 from frequency_poison import FrequencyDomainVideoMarker
 
 # Create simple frame - solid gray

@@ -16,7 +16,7 @@ import numpy as np
 import subprocess
 import torch
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'poison-core'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Sigil'))
 from differentiable_codec import DifferentiableH264
 
 

@@ -28,7 +28,7 @@ sigil/
 │
 ├── experimental/                  # ✅ NEW: Isolated experimental research
 │   ├── README.md                     # ⚠️ WARNING about limitations
-│   ├── radioactive/                  # Radioactive marking (from poison-core/)
+│   ├── radioactive/                  # Radioactive marking (from Sigil/)
 │   ├── verification/                 # Verification scripts
 │   └── deprecated_dct_approach/      # Archived DCT research
 │
@@ -142,7 +142,7 @@ from experimental.radioactive.radioactive_poison import RadioactiveMarker
 
 ```bash
 python experiments/perceptual_hash.py video.mp4 60
-python poison-core/poison_cli.py poison image.jpg output.jpg
+python Sigil/poison_cli.py poison image.jpg output.jpg
 ```
 
 **After:**
@@ -164,7 +164,7 @@ python experimental/radioactive/poison_cli.py poison image.jpg output.jpg
 ports:
   - "5000:5000"
 volumes:
-  - ./poison-core:/app/poison-core
+  - ./Sigil:/app/Sigil
 ```
 
 **After:**
@@ -183,7 +183,7 @@ volumes:
 ## What's Preserved
 
 - `experiments/` - Original files kept (for backward compatibility)
-- `poison-core/` - Original files kept (copied to `experimental/radioactive/`)
+- `Sigil/` - Original files kept (copied to `experimental/radioactive/`)
 - `verification/` - Original files kept (copied to `experimental/verification/`)
 - All tests still work (paths will need updating)
 
@@ -294,7 +294,7 @@ print(db.get_stats())
 
 ### Phase 3 (Optional)
 
-1. **Remove old directories** (`experiments/`, `poison-core/`, `verification/`)
+1. **Remove old directories** (`experiments/`, `Sigil/`, `verification/`)
 2. **Update all tests** to use new imports
 3. **Add integration tests** for full workflow
 4. **Create deployment guide** for production
@@ -322,7 +322,7 @@ print(db.get_stats())
 1. `experiments/perceptual_hash.py` → `core/perceptual_hash.py` (copied)
 2. `experiments/batch_hash_robustness.py` → `core/batch_robustness.py` (copied)
 3. `experiments/deprecated_dct_approach/` → `experimental/deprecated_dct_approach/`
-4. `poison-core/*` → `experimental/radioactive/` (copied)
+4. `Sigil/*` → `experimental/radioactive/` (copied)
 5. `verification/*` → `experimental/verification/` (copied)
 6. `Dockerfile.api` → `docker/Dockerfile.api`
 7. `Dockerfile.web` → `docker/Dockerfile.web`
