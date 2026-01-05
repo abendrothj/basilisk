@@ -1,8 +1,11 @@
 
 import pytest
-import numpy as np
-import sys
 import subprocess
+import os
+import sys
+import tempfile
+import cv2
+import numpy as np
 from typing import List, Union
 from core.perceptual_hash import compute_perceptual_hash
 
@@ -50,6 +53,44 @@ class TestSecureSeedCLI:
     """Integration tests calls the CLI directly"""
     
     VIDEO_PATH = "experimental/test_videos/short_test.mp4"
+    _temp_video_path = None
+
+    @classmethod
+    def setup_class(cls):
+        """Ensure video file exists, create dummy if needed"""
+        if not os.path.exists(cls.VIDEO_PATH):
+            # Create a temporary video file
+            fd, path = tempfile.mkstemp(suffix=".mp4")
+            os.close(fd)
+            cls._temp_video_path = path
+            cls.VIDEO_PATH = path
+            
+            # Generate dummy video content
+            height, width = 64, 64
+            fps = 10
+            # Use 'mp4v' codec which is widely supported
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            out = cv2.VideoWriter(path, fourcc, fps, (width, height))
+            
+            if not out.isOpened():
+                # Fallback to creating a dummy empty file if opencv fails (though it shouldn't)
+                # But for the test we need valid frames, so this is critical.
+                pass
+                
+            try:
+                # 10 frames of random noise
+                for _ in range(10):
+                    frame = np.random.randint(0, 256, (height, width, 3), dtype=np.uint8)
+                    out.write(frame)
+            finally:
+                out.release()
+    
+    @classmethod
+    def teardown_class(cls):
+        """Cleanup temporary video if created"""
+        if cls._temp_video_path and os.path.exists(cls._temp_video_path):
+            os.unlink(cls._temp_video_path)
+
 
     def run_cli(self, args: List[str]) -> str:
         cmd = [sys.executable, "-m", "cli.extract", self.VIDEO_PATH] + args
