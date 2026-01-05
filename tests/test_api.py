@@ -13,6 +13,7 @@ from PIL import Image
 import sys
 import cv2
 import numpy as np
+import unittest.mock
 
 # Add api directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'api'))
@@ -24,8 +25,24 @@ from server import app
 def client():
     """Create Flask test client"""
     app.config['TESTING'] = True
-    with app.test_client() as client:
-        yield client
+    
+    # Store original db path to restore if needed (though patch handles this)
+    # Create temporary database for testing
+    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as temp_db:
+        temp_db_path = temp_db.name
+    
+    # Initialize temp database
+    from core.hash_database import HashDatabase
+    test_db = HashDatabase(temp_db_path)
+    
+    # Patch the global db object in server module
+    with unittest.mock.patch('server.db', test_db):
+        with app.test_client() as client:
+            yield client
+            
+    # Cleanup
+    test_db.close()
+    Path(temp_db_path).unlink(missing_ok=True)
 
 
 @pytest.fixture

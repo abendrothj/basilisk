@@ -110,15 +110,6 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
     
-    - name: Build Web UI Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./docker/Dockerfile.web
-        push: false
-        tags: sigil-web:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
     
     - name: Test docker-compose config
       run: |

@@ -60,7 +60,7 @@ python -m cli.anchor your_video.mp4.signature.json \
 3. The hash survived YouTube compression (perceptual matching)
 4. You have legal evidence for DMCA/copyright claims
 
-### Docker (Full Stack - Web UI + API)
+### Docker (API Server)
 
 ```bash
 git clone https://github.com/abendrothj/sigil.git
@@ -68,7 +68,7 @@ cd sigil
 docker-compose up
 ```
 
-Visit http://localhost:3000 for web interface.
+The API will be available at http://localhost:5001.
 
 See [DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md) for details.
 
@@ -206,7 +206,7 @@ See [VERIFICATION_PROOF.md](VERIFICATION_PROOF.md) for full methodology and [doc
 ### Implementation
 
 - ✅ **35/35 tests passing** (8 API tests, 27 cryptographic signature tests)
-- ✅ **Complete toolchain** (CLI + REST API + Web UI)
+- ✅ **Complete toolchain** (CLI + REST API)
 - ✅ **1200+ lines of documentation** (Technical whitepapers, quick-start guides, API docs)
 - ✅ **Backward compatible** (Database migrations, optional signature layer)
 
@@ -257,9 +257,6 @@ sigil/
 ├── api/                      # Flask REST API server
 │   ├── server.py                 # Perceptual hash + signature endpoints
 │   └── requirements.txt
-├── web-ui/                   # Next.js web interface
-│   ├── app/
-│   └── package.json
 ├── docs/                     # Technical documentation (1200+ lines)
 │   ├── Perceptual_Hash_Whitepaper.md  # Primary technical whitepaper
 │   ├── CRYPTOGRAPHIC_SIGNATURES.md    # Ed25519 signature system (NEW)
