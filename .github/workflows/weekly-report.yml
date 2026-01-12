@@ -60,7 +60,7 @@ jobs:
         find core/ cli/ api/ tests/ -name "*.py" | xargs wc -l >> report.md
     
     - name: Create issue with report
-      uses: peter-evans/create-issue-from-file@v4
+      uses: peter-evans/create-issue-from-file@v6
       with:
         title: Weekly Code Quality Report - ${{ github.run_number }}
         content-filepath: report.md
